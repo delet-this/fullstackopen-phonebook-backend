@@ -18,7 +18,7 @@ let persons = [
         number: '12-43-234345'
     },
     {
-        id: 3,
+        id: 4,
         name: 'Mary Poppendick',
         number: '39-23-6423122'
     },
@@ -33,6 +33,18 @@ app.get('/api/info', (request, response) => {
         `<p>Phonebook has info for ${persons.length} people</p>` +
         `<p>${Date()}</p>`
     )
+})
+
+app.get('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    const person = persons.find(p => p.id === id)
+
+    if (person) {
+        response.json(person)
+    } else {
+        response.status(404).end()
+    }
+
 })
 
 const PORT = 3001
