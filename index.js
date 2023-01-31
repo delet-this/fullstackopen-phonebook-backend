@@ -9,6 +9,16 @@ app.use(cors())
 app.use(express.json())
 app.use(express.static('build'))
 
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformed id' })
+    }
+
+    next(error)
+}
+
 morgan.token('body', (req) => {
     if (req.body && Object.keys(req.body).length !== 0) {
         return JSON.stringify(req.body)
@@ -61,7 +71,7 @@ app.get('/api/persons/:id', (request, response) => {
     })
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     const id = Number(request.params.id)
     persons = persons.filter(p => p.id !== id)
 
@@ -69,8 +79,7 @@ app.delete('/api/persons/:id', (request, response) => {
         .then(result => {
             response.status(204).end()
         })
-
-    response.status(204).end()
+        .catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response) => {
@@ -103,6 +112,8 @@ app.post('/api/persons', (request, response) => {
         response.json(savedPerson)
     })
 })
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
